@@ -1,73 +1,71 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
-import "./globals.css";
-import "@mysten/dapp-kit/dist/index.css"; // don't forget to import default stylesheet
-import Creator from "./pages/Creator.tsx";
-import MyAvatar from "./pages/MyAvatar.tsx";
-import Docs from "./pages/docs.tsx";
-import ImmersiveFace from "./pages/ImmersiveFace.tsx";
-
-import { getFullnodeUrl } from "@mysten/sui.js/client";
-import {
-  SuiClientProvider,
-  WalletProvider,
-  createNetworkConfig,
-} from "@mysten/dapp-kit";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Profile from "./pages/Profile.tsx";
-import AvatarInAction from "./pages/AvatarInAction.tsx";
-
-const queryClient = new QueryClient();
-
-const { networkConfig } = createNetworkConfig({
-  localnet: { url: getFullnodeUrl("localnet") },
-  devnet: { url: getFullnodeUrl("devnet") },
-  testnet: { url: getFullnodeUrl("testnet") },
-  mainnet: { url: getFullnodeUrl("mainnet") },
-});
+import Layout from "./components/Layout.tsx";
+import Trending from "./Pages/Trending.tsx";
+import Rewards from "./Pages/Rewards.tsx";
+import Home from "./Pages/Home.tsx";
+import { DAppKitProvider } from "@vechain/dapp-kit-react";
+import { Wallet } from "./components/Wallet.tsx";
+import Map from "./components/Map.tsx";
+import { PrivyProvider } from "@privy-io/react-auth";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <Layout>
+        <Home />
+      </Layout>
+    ),
   },
   {
-    path: "create",
-    element: <Creator />,
+    path: "/explore",
+    element: (
+      <Layout>
+        <Trending />
+      </Layout>
+    ),
   },
   {
-    path: "avatar/:avatarId",
-    element: <MyAvatar />,
-  },
-  {
-    path: "avatar/in-action/:avatarId",
-    element: <AvatarInAction />,
-  },
-  {
-    path: "avatar/immersive-top/:avatarId",
-    element: <ImmersiveFace />,
-  },
-  {
-    path: "docs",
-    element: <Docs />,
-  },
-  {
-    path: "profile/:avatarId",
-    element: <Profile />,
+    path: "/rewards",
+    element: (
+      <Layout>
+        <Rewards />
+      </Layout>
+    ),
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-        <WalletProvider autoConnect>
-          <RouterProvider router={router} />
-        </WalletProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
+    <PrivyProvider
+      appId="cly1788dl04831zy70yoa2f8e"
+      config={{
+        // Display email and wallet as login methods
+        loginMethods: ["google", "twitter", "apple"],
+        // Customize Privy's appearance in your app
+        appearance: {
+          theme: "dark",
+          accentColor: "#24950d",
+          logo: "https://your-logo-url",
+        },
+        // Create embedded wallets for users who don't have a wallet
+        embeddedWallets: {
+          createOnLogin: "users-without-wallets",
+        },
+      }}
+    >
+      <DAppKitProvider
+        usePersistence
+        requireCertificate={false}
+        genesis="test"
+        nodeUrl="https://testnet.vechain.org/"
+        logLevel={"DEBUG"}
+      >
+        <RouterProvider router={router} />
+      </DAppKitProvider>
+    </PrivyProvider>
   </React.StrictMode>
 );
